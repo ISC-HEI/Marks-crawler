@@ -1,0 +1,12 @@
+[project]
+name = "streamlit-isc"
+version = "0.6.0"
+description = "Reads modules files and play with them"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "openpyxl>=3.1.5",
+    "streamlit>=1.42.0",
+    "streamlit-aggrid>=1.1.0",
+    "streamlit-slickgrid>=0.1.11",
+]

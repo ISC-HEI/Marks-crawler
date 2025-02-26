@@ -1,0 +1,45 @@
+ID module;Nom module;ID UE;Nom UE;Nom court UE;Semestre;Poids;PoidCC;PoidES
+100;Sciences IT 1;100.1;Algèbre linéaire 1;ALin1;S1;3;1;2
+100;Sciences IT 1;100.2;Algèbre linéaire 2;ALin2;S2;4;1;1
+100;Sciences IT 1;100.3;Analyse 1;Ana1;S1;5;1;1
+100;Sciences IT 1;100.4;Analyse 2;Ana2;S2;4;1;2
+100;Sciences IT 1;100.5;Maths discrètes;MDis;S2;4;1;1
+101;Fondements de la programmation 1;101.1;Programmation impérative;PImp;S1;6;1;2
+101;Fondements de la programmation 1;101.2;Programmation orientée-objets;PObj;S1;6;1;0
+102;Architecture matérielle;102.1;Systèmes numériques;DiD;S1;5;1;1
+102;Architecture matérielle;102.2;Architecture des ordinateurs;ArchOrd;S2;4;1;0
+103;Sécurité et communication;103.1;Réseaux IP;RIp;S1;3;4;6
+103;Sécurité et communication;103.2;Cryptographie et sécurité;CrySec;S2;3;2;1
+104;Humanités 1;104.1;Anglais 1;Ang1;S1;4;2;1
+104;Humanités 1;104.2;Anglais 2;Ang2;S2;2;1;0
+104;Humanités 1;104.4;Communication et expression;ComEx;S2;3;1;0
+105;Summer school 1;105.1;Data challenge summer school;SummerSchool1;SS1;4;1;0
+200;Sciences IT 2;200.1;Computational physics 1;ComPhy1;S1;3;1;0
+200;Sciences IT 2;200.2;Probabilités et statistiques IT;ProbStatIT;S1;3;1;1
+201;Fondements de la programmation 2;201.1;Algorithmes et structures de données;Algo;S1;4;1;1
+201;Fondements de la programmation 2;201.2;Génie logiciel;SoftEng;S1;4;1;1
+201;Systèmes et concurrence;201.3;Bases de données relationnelles;DBRel;S1;4;1;1
+202;Systèmes et concurrence;202.1;Systèmes d'exploitation;OS;S1;4;1;0
+202;Systèmes et concurrence;202.2;Programmation concurrente;PCON;S1;2;1;2
+203;Humanités 2;203.1;Éthique et droit IT;EthIT;S1;2;1;1
+203;Humanités 2;203.2;Anglais 3;Ang3;S1;2;1;1
+204;Sciences IT 3;204.1;Signal and information;SigInf;S2;4;1;0
+204;Sciences IT 3;204.2;Computational physics 2;ComPhy2;S2;3;1;0
+205;Advanced programming;205.1;Functional programming;FunProg;S2;3;1;0
+205;Advanced programming;205.2;Beyond relational databases;BeyDB;S2;4;2;1
+205;Advanced programming;205.3;Full-stack Web development;FStack;S2;4;1;0
+206;Text and vision;206.1;Data processing and visualization;DPVIZ;S2;4;1;0
+206;Text and vision;206.2;Model driven machine vision;MDVis;S2;4;1;0
+206;Text and vision;206.3;Formal and natural languages;FNL;S2;3;1;1
+207;Summer school 2;207.1;Mobile development summer school;SummerSchool2;SS2;3;1;0
+301;Machine learning and AI;301.1;Optimization ML and deep learning;ML;S1;13;1;0
+302;Data computation;302.1;Big data cloud and infrastructures;COMP;S1;14;1;0
+303;Semester project 3;303.1;Hands-on development project;SEM;S1;3;1;0
+304;Major option track;304.1;Robot control with generative AI;ROBOT;S1;10;1;0
+304;Major option track;304.3;Text and language in CS;TXT;S1;10;1;0
+304;Major option track;304.4;Digital energy management;ENE;S1;10;1;0
+305;Data science option track 5;305.1;IoT and distributed AI;IOT;S1;5;1;0
+305;Data science option track 5;305.2;Real-world data science;RWDS;S1;5;1;0
+305;Data science option track 5;305.3;Computer graphics and games;CG;S1;5;1;0
+305;Data science option track 5;305.4;Digital energy management;ENE;S1;5;1;0
+330;Bachelor thesis;330.1;Travail individuel de bachelor;TB;S2;15;1;0
