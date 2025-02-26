@@ -1,6 +1,6 @@
 # Marks crawler from XLSX files 
 
-![Static Badge](https://img.shields.io/badge/WIP-blue?style=flat)
+![Static Badge](https://img.shields.io/badge/WIP-0.1-blue?style=flat&color=blue)
 
 This script provides a [Streamlit](https://streamlit.io/) application for visualizing and analyzing student marks.
 
