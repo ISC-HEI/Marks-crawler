@@ -2,7 +2,7 @@
 
 ![Static Badge](https://img.shields.io/badge/WIP-blue?style=flat)
 
-This script provides a Streamlit](https://streamlit.io/) application for visualizing and analyzing student marks.
+This script provides a [Streamlit](https://streamlit.io/) application for visualizing and analyzing student marks.
 
 It allows users to view marks by module, student, or academic year. The application
 loads data from Excel files, preprocesses it, and presents it in interactive tables
