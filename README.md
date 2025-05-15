@@ -42,7 +42,16 @@ Add the modules marks Excel files in `res/marks` folder. There's even a script t
 ## How to install and run
 
 ### Installing with UV
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv python install
+uv add streamlit
+```
 
+### Running with UV
+Then run with `uv run streamlit run marks_overview.py`
+
+### Creating a streamlit app from scratch (NOT required here)
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 uv python install
@@ -52,9 +61,3 @@ uv add streamlit
 uv run streamlit
 ```
 
-### Running
-
-And then
-```bash
-streamlit run marks_overview.py
-```
