@@ -1,0 +1,65 @@
+ID module;Nom module;ID UE;Nom UE;Abréviation UE;Semestre;Poids CC Automne;Poids Exa Automne;Poids CC Printemps;Poids Exa Printemps;Poids UE;Remarques
+E1.01;Mathématique 1 / Mathematik 1;E1.011;Analyse 1 / Analysis 1;An1;S1;1;1;;;2;
+E1.01;Mathématique 1 / Mathematik 1;E1.012;Algèbre linéaire 1 / Lineare Algebra 1;ALin1;S1;1;2;;;1;
+E1.02;Informatique 1 / Informatik 1;E1.021;Informatique 1;Inf;S1;1;1;;;1;
+E1.03;Projet 1 / Projekt 1;E1.031;Projet 1 / Projekt 1;Pr1;S1;1;1;;;1;
+E1.04;Problématique globale / Globale Problematik;E1.041;Séminaires / Seminare;SEM;S1;acquis/na;acquis/na;;;acquis/na;
+E1.04;Problématique globale / Globale Problematik;E1.042;Institutions et organisations / Institutionen und Organisationen;IeO;S1;acquis/na;acquis/na;;;acquis/na;
+E1.04;Problématique globale / Globale Problematik;E1.043;Enjeux énergétiques et environnementaux / Energie- und umweltpolitische Herausforderungen ;EEE;S1;acquis/na;acquis/na;;;acquis/na;
+E1.05;Outils et méthodes interdisciplinaires 1 / Interdisziplinäre Methoden & Tools 1;E1.051;Economie et gestion de projets / Wirtschaft und Projektmanagement;EGP;S1;1;1;;;1;
+E1.05;Outils et méthodes interdisciplinaires 1 / Interdisziplinäre Methoden & Tools 1;E1.052;Outils de communiction et langues / Kommunikationsmittel und Sprachen;OdC;S1;1;1;;;1;
+E1.06;Systèmes énergétiques 1 / Energiesysteme 1;E1.061;Systèmes électriques DC / Elektrische Système Gleichstrom;SyEl1;S1;1;1;;;1;
+E1.07;Gestion environnementale 1 / Umweltmanagement 1;E1.071;Gestion environnementale 1 / Umweltmanagement 1;GEn1;S1;1;1;;;1;
+E1.08;Chimie environnementale / Umweltchemie;E1.081;Chimie environnementale / Umweltchemie;ChEn;S1;1;1;;;1;
+EC1.01;Allemand 1 / Deutsch 1;EC1.011;Allemand 1 / Deutsch 1;LaD1;S1;1;1;;;1;
+EC1.02;Français 1 / Französisch 1;EC1.021;Français 1 / Französisch 1;LaF1;S1;1;1;;;1;
+E2.01;Sciences de l'ingénierie 2 / Ingenieurwissenschaften 2;E2.011;Analyse 2 / Analysis 2;An2;S2;;;1;2;3;
+E2.01;Sciences de l'ingénierie 2 / Ingenieurwissenschaften 2;E2.012;Mathématique appliquées 1 / Angewandte Mathematik 1;Maa1;S2;;;1;2;3;
+E2.01;Sciences de l'ingénierie 2 / Ingenieurwissenschaften 2;E2.013;Physique 1 / Physik 1;Phy1;S2;;;1;1;3;
+E2.01;Sciences de l'ingénierie 2 / Ingenieurwissenschaften 2;E2.014;Chimie et énergie / Chemie und Energie;ChE;S2;;;1;1;2;
+E2.02;Summer School 1;E2.021;Summer School 1;SS1;S2;;;1;1;1;
+E2.03;Outils et méthodes interdisciplinaires 2 / Interdisziplinäre Methoden & Tools 2;E2.031;Culture et éthique de l'ingénieur·e / Kultur und Ethik im Ingenieurberuf;CEI;S2;;;1;-;1;
+E2.03;Outils et méthodes interdisciplinaires 2 / Interdisziplinäre Methoden & Tools 2;E2.032;Sciences, techniques et société / Wissenschaft, Technik und Gesellschaft;STS;S2;;;1;1;1;
+E2.04;Energy Data et contrôle 1 / Energy Data and Control 1;E2.041;Traitement et gestion de données énergétiques 1 / Verarbeitung und Management von Energiedaten 1;TGD1;S2;;;1;-;2;
+E2.04;Energy Data et contrôle 1 / Energy Data and Control 1;E2.042;Mesure, contrôle, régulation 1 / Mess-, Steuer-, Regeltechnik 1;MCR1;S2;;;1;1;1;
+E2.05;Systèmes énergétiques 2 / Energiesysteme 2;E2.051;Systèmes électriques AC et fréquence / Elektrische Système Wechselstrom;SyEl2;S2;;;1;1;1;
+E2.06;Gestion environnementale 2 / Umweltmanagement 2;E2.061;Gestion environnementale 2 / Umweltmanagement 2;GEn2;S2;;;1;1;1;
+E2.07;Economie 1 / Wirtschaft 1;E2.071;Ingénierie financière / Ingenieuroekonomie;Ifin;S2;;;-;1;1;
+EC2.01;Allemand 2 / Deutsch 2;EC2.011;Allemand 2 / Deutsch 2;LaD2;S2;;;1;1;1;
+EC2.02;Français 2 / Französisch 2;EC2.021;Français 2 / Französisch 2;LaF2;S2;;;1;1;1;
+E3.01;Mathématique 3 / Mathematik 3;E3.011;Analyse 3 / Analysis 3;An3;S3;1;2;;;1;
+E3.02;Physique 2 / Physik 2;E3.021;Physique 2 / Physik 2;Phy2;S3;1;1;;;1;
+E3.03;Projet 2 / Projekt 2;E3.031;Projet 2 / Projekt 2;Pr2;S3;1;0;;;1;
+E3.04;Systèmes énergétiques 3 / Energiesysteme 3;E3.041;Matériaux pour les systèmes énergétiques / Werkstoffe für Energiesysteme;Mat;S3;1;1;;;2;
+E3.04;Systèmes énergétiques 3 / Energiesysteme 3;E3.042;Mécanique appliquée aux systèmes énergétiques / Mechanik und Energiesysteme;Mec;S3;1;1;;;2;
+E3.04;Systèmes énergétiques 3 / Energiesysteme 3;E3.043;Systèmes électromagnétiques 1 / Elektromagnetische Systeme 1;SElm1;S3;1;1;;;3;
+E3.05;Energy Data et contrôle 2 / Energy Data & Control 2;E3.051;Traitement et gestion de données énergétiques 2 / Verarbeitung und Management von Energiedaten 2;TGD2;S3;1;1;;;1;
+E3.05;Energy Data et contrôle 2 / Energy Data & Control 2;E3.052;Mesure, contrôle, régulation 2 / Mess-, Steuer-, Regeltechnik 2;MCR2;S3;1;1;;;2;
+E3.06;Production et stockage / Produktion und Speicherung;E3.061;Energies renouvelables 1  / Erneuerbare Energien 1;ER1;S3;1;1;;;1;
+E3.06;Production et stockage / Produktion und Speicherung;E3.062;Système de stockage de l'énergie 1 / Energiespeichersysteme 1;SySE1;S3;1;1;;;1;
+E3.07;Distribution et transport 1 / Verteilung und Transport 1;E3.071;Réseaux électriques 1 / Stromnetze 1;ReE1;S3;1;1;;;1;
+E3.07;Distribution et transport 1 / Verteilung und Transport 1;E3.072;Réseaux thermiques 1 / Thermische Netze 1;ReT1;S3;1;1;;;1;
+EC3.01;Ecologie industrielle 1 / Industrielle Ökologie 1;EC3.011;Ecologie industrielle 1 / Industrielle Ökologie 1;EcInd1;S3;1;1;;;1;
+E4.01;Sciences de l'ingénierie 4 / Ingenieurwissenschaften 4;E4.011;Mathématique appliquée 2 / Angewandte Mathematik 2;Maa2;S4;;;1;2;1;
+E4.02;Summer School 2;E4.021;Summer School 2;SS2;S4;;;1;0;1;
+E4.03;Conversion de l'énergie électrique / Umformung elektrischer Energie;E4.031;Systèmes électromagnétiques 2 / Elektromagnetische Systeme 2;SElm2;S4;;;1;1;1;
+E4.03;Conversion de l'énergie électrique / Umformung elektrischer Energie;E4.032;Convertisseur à base d'électronique de puissance / Leistungselektronische Wandler;Con;S4;;;1;1;2;
+E4.04;Systèmes énergétiques 4 / Energiesysteme 4;E4.041;Systèmes thermiques  2 / Thermische Systeme 2;SyTh;S4;;;1;-;3;
+E4.04;Systèmes énergétiques 4 / Energiesysteme 4;E4.042;Simulation numérique / Numerische Simulation;SNu;S4;;;1;-;3;
+E4.04;Systèmes énergétiques 4 / Energiesysteme 4;E4.043;Systèmes fluidiques / Fluidsysteme;SyF;S4;;;1;1;2;
+E4.05;Analyse du cycle de vie 1 / Lebenszyklusanalyse 1;E4.051;Analyse du cycle de vie 1 / Lebenszyklusanalyse 1;ACV1;S4;;;1;1;3;
+E4.06;Production et stockage 2 / Produktion und Speicherung 2;E4.061;Energies renouvelables 2 / Erneuerbare Energien 2;ER2;S4;;;1;1;1;
+E4.06;Production et stockage 2 / Produktion und Speicherung 2;E4.062;Système de stockage de l'énergie 2 / Energiespeichersysteme 2;SySE2;S4;;;1;1;1;
+E4.07;Energy Data et contrôle 3 / Energy Data & Control 3;E4.071;Introduction Energy Management Systems / Einführung Energy Management Systems;EMS;S4;;;1;1;1;
+EC4.01;Physique 3 / Physik 3;EC4.011;Physique 3 / Physik 3;Phy3;S4;;;;;1;
+830;Gestion environnementale / Umweltmanagement;8301;Gestion environnementale / Umweltmanagement;GEn;S5, S6;1;1;1;1;1;Module annuel
+831;Management de l'énergie / Energiemanagement;8311;Management de l'énergie / Energiemanagement;Men;S5, S6;2;1;2;1;1;Module annuel
+832;Energie thermique / Wärmeenergie;8321;Energie thermique / Wärmeenergie;EnT;S5, S6;1;1;1;1;1;Module annuel
+833;Energie II / Energie II;8331;Energie II / Energie II;EnII;S5, S6;1;1;1;-;1;Module annuel
+834;Hydraulique / Hydraulik;8341;Hydraulique / Hydraulik;Hyd;S5, S6;1;1;1;1;1;Module annuel
+838;Méthodes numériques / Numerische Methoden;8381;Méthodes numériques / Numerische Methoden;MNu;S5, S6;1;1;1;1;1;Module annuel
+839;Projet 3 / Projekt 3;8391;Projet 3 / Projekt 3;Pr3;S5;-;1;;;4;
+835;Réseaux électriques 2 / Stromnetze 2;8351;Réseaux électriques 2 / Stromnetze 2;ReE 2;S5, S6;1;1;1;1;1;Module annuel
+836;Automatisation répartie / Verteilte Automatisierung;8361;Automatisation répartie / Verteilte Automatisierung;AuR;S5, S6;1;1;1;1;1;Module annuel
+837;Systèmes d'information / Informationssysteme;8371;Systèmes d'information / Informationssysteme;SIn;S5, S6;1;1;1;1;1;Module annuel
+850;Travail de diplôme bachelor / Bachelorarbeit;8501;Travail de diplôme bachelor / Bachelorarbeit;TD;S6;;;-;1;1;

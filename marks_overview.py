@@ -26,6 +26,7 @@ import os
 import streamlit as st
 import pandas as pd
 import re
+import tempfile
 
 from streamlit_slickgrid import (
     add_tree_info,
@@ -64,6 +65,37 @@ st.logo(ISC_LARGE, icon_image=ISC_LOGO, size="large")
 
 default_years = ["2022-2023", "2023-2024", "2024-2025"]
 
+@st.cache_resource
+def load_module_list():
+    """
+    Loads the module list for each sector from a csv file and return it.
+    
+    Returns:
+        dict: A dictionary containing the module list for each sector for each year.
+    """
+    module_dict = {}
+    module_list_dir = "res/study_plans/"
+    for sector in ["ETE", "SYND", "TEVI"]:
+        file_path = os.path.join(module_list_dir, sector+"StudyPlan.csv")
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"Module list file not found: {file_path}") 
+
+        # Load csv into a pandas DataFrame
+        df = pd.read_csv(file_path, delimiter=";")
+        # Get all rows where the value in column "Semester" contains "S1" or "S2"
+        df_year1 = df[df["Semestre"].str.contains("S1|S2", na=False)]
+        df_year2 = df[df["Semestre"].str.contains("S3|S4", na=False)]
+        df_year3 = df[df["Semestre"].str.contains("S5|S6", na=False)]
+        module_dict[sector] = {
+            "1st year": [str(x) for x in df_year1["ID module"]],
+            "2nd year": [str(x) for x in df_year2["ID module"]],
+            "3rd year": [str(x) for x in df_year3["ID module"]],
+        }
+    return module_dict
+
+#module_list = load_module_list()
+st.session_state.setdefault("modules_list", load_module_list())
+#print("Loaded module list:", st.session_state["modules_list"])
 
 @st.cache_resource
 def load_and_mangle_data(file_path):
@@ -117,26 +149,116 @@ def load_all_data(directory):
             all_data[filename] = df
     return all_data
 
+#all_data = load_all_data("res/marks")
+#print("all_data:", all_data)
 
-all_data = load_all_data("res/marks")
+def get_keys(all_data):
+    # Create a dictionary of keys with the module code, module name, and academic year
+    regex = r"([^ ]+)\s+(.*?)(\d{4}-\d{4})"
+    all_keys = {}
 
-# Create a dictionary of keys with the module code, module name, and academic year
-regex = r"(\d{3})(.*?)(\d{4}-\d{4})"
-all_keys = {}
+    for key in all_data.keys():
+        matches = re.findall(regex, key)
+        if matches:
+            match = matches[0]
+            module_code = match[0]
+            module_name = match[1]
+            academic_year = match[2]
+            all_keys[key] = (module_code, module_name, academic_year)
+        else:
+            print(f"No match found for key: {key}")
+    return all_keys
 
-for key in all_data.keys():
-    matches = re.findall(regex, key)
-    if matches:
-        match = matches[0]
-        module_code = match[0]
-        module_name = match[1]
-        academic_year = match[2]
-        all_keys[key] = (module_code, module_name, academic_year)
-    else:
-        print(f"No match found for key: {key}")
+#all_keys = get_keys(all_data)
 
 # print(f'The keys are {all_keys}')
+# Initialize session state for all_data if not already set
+st.session_state.setdefault("all_data", {})
+st.session_state.setdefault("all_keys", {})
+# if "all_data" not in st.session_state:
+#     st.session_state["all_data"] = all_data
+# if "all_keys" not in st.session_state:
+#     st.session_state["all_keys"] = all_keys
+#     print("added all keys to session state", st.session_state["all_keys"])
 
+def display_upload_data_view():
+    st.title("Upload Excel Files")
+    sector_options = ["ETE", "ISC", "SYND", "TEVI"]
+    # Determine the index for st.radio based on st.session_state["sector"]
+    sector_index = None
+    # if "sector" in st.session_state and st.session_state["sector"] in sector_options:
+        # sector_index = sector_options.index(st.session_state["sector"])
+
+    #print("sector_index:", sector_index)
+    st.session_state["sector"] = st.radio(
+        "Choose your sector:",
+        sector_options,
+        horizontal=True,
+        index=sector_index  # Set to the correct index or None
+    )
+    st.markdown("Upload your `.xlsx` files to use them as the data source for the app.")
+
+    # File uploader
+    uploaded_files = st.file_uploader(
+        "Upload Excel files", type=["xlsx"], accept_multiple_files=True
+    )
+
+    if uploaded_files:
+        #print("Uploaded files:", uploaded_files)
+        st.success(f"{len(uploaded_files)} file(s) uploaded successfully!")
+        # Save uploaded files to a temporary directory
+        temp_dir = tempfile.mkdtemp()
+        for uploaded_file in uploaded_files:
+            with open(os.path.join(temp_dir, uploaded_file.name), "wb") as f:
+                f.write(uploaded_file.getbuffer())
+        st.session_state["all_data"] = load_all_data(temp_dir)
+        st.session_state["all_keys"] = get_keys(st.session_state["all_data"])
+        st.info("Uploaded files will now be used as the data source.")
+
+def filter_module_by_level(selected_levels, display_names, sector):
+    """
+    Filters the display names based on the selected levels and sector.
+
+    Args:
+        selected_levels (list): List of selected levels (e.g., "1st year", "2nd year", "3rd year").
+        display_names (list): List of display names to filter.
+        sector (str): The sector to filter by.
+
+    Returns:
+        list: Filtered list of display names.
+    """
+    filtered_display_names = []
+    for level in selected_levels:
+        match sector :
+            # Filter display names based on the selected level(s)
+            
+            case "ISC":
+                # For ISC, we filter by the first character of the module code
+                if level == "1st year":
+                    filtered_display_names.extend(
+                        [name for name in display_names if name.startswith("1")]
+                    )
+                elif level == "2nd year":
+                    filtered_display_names.extend(
+                        [name for name in display_names if name.startswith("2")]
+                    )
+                elif level == "3rd year":
+                    filtered_display_names.extend(
+                        [name for name in display_names if name.startswith("3")]
+                    )
+            case _:
+                # For ETE, SYND and TEVI we check the module list
+                filtered_display_names.extend(
+                    [name for name in display_names if name.split(" ")[0] in st.session_state["modules_list"][sector][level]]
+                )
+            
+                
+    filtered_display_names.sort()
+
+    # Remove duplicates while preserving order
+    filtered_display_names = list(dict.fromkeys(filtered_display_names))
+    #print("Filtered display names:", filtered_display_names)
+    return filtered_display_names
 
 def display_selected_module(all_data, all_keys):
     # Calculate the average of each column
@@ -170,25 +292,26 @@ def display_selected_module(all_data, all_keys):
             on_change=lambda: st.session_state.update(module_selected_idx=0))
 
         # Filter display names based on the selected level(s)
-        filtered_display_names = []
-        for level in selected_levels:
-            if level == "1st year":
-                filtered_display_names.extend(
-                    [name for name in display_names if name.startswith("1")]
-                )
-            elif level == "2nd year":
-                filtered_display_names.extend(
-                    [name for name in display_names if name.startswith("2")]
-                )
-            elif level == "3rd year":
-                filtered_display_names.extend(
-                    [name for name in display_names if name.startswith("3")]
-                )
+        filtered_display_names = filter_module_by_level(selected_levels, display_names, st.session_state['sector'])
+        # filtered_display_names = []
+        # for level in selected_levels:
+        #     if level == "1st year":
+        #         filtered_display_names.extend(
+        #             [name for name in display_names if name.startswith("1")]
+        #         )
+        #     elif level == "2nd year":
+        #         filtered_display_names.extend(
+        #             [name for name in display_names if name.startswith("2")]
+        #         )
+        #     elif level == "3rd year":
+        #         filtered_display_names.extend(
+        #             [name for name in display_names if name.startswith("3")]
+        #         )
 
-        filtered_display_names.sort()
+        # filtered_display_names.sort()
 
-        # Remove duplicates while preserving order
-        filtered_display_names = list(dict.fromkeys(filtered_display_names))
+        # # Remove duplicates while preserving order
+        # filtered_display_names = list(dict.fromkeys(filtered_display_names))
 
     # Display the selectbox with the filtered names
     with col2:
@@ -349,7 +472,8 @@ def display_selected_student(all_data):
 
     # Display summary table
     summary_df = pd.DataFrame(summary_data)
-    summary_df.sort_values(by="Module", inplace=True)
+    if "Module" in summary_df.columns:
+        summary_df.sort_values(by="Module", inplace=True)
     st.dataframe(summary_df)
     
     
@@ -410,8 +534,8 @@ def display_academic_year_view(all_data, all_keys):
         elif level == "2nd year":
             filtered_module_codes.append("2")
         elif level == "3rd year":
-                filtered_module_codes.append("3")
-    
+            filtered_module_codes.append("3")
+        #print("filtered_module_codes:", filtered_module_codes)
         # Create a dictionary to store aggregated student data
         aggregated_data = {}
     
@@ -419,10 +543,17 @@ def display_academic_year_view(all_data, all_keys):
         for filename, df in all_data.items():
             # Extract module code from filename
             module_code = all_keys[filename][0]
-    
-            # Filter by selected module levels
-            if not any(module_code.startswith(code) for code in filtered_module_codes):
-                continue
+            #print("module_code:", module_code)
+            # Skip modules that do not match the selected level
+            match st.session_state["sector"]:
+                case "ISC":
+                    # Filter by selected module levels (use first character of module code)
+                    if not any(module_code.startswith(code) for code in filtered_module_codes):
+                        continue
+                case _:
+                    # For ETE, SYND and TEVI we check the module list
+                    if module_code not in st.session_state["modules_list"][st.session_state["sector"]][selected_level]:
+                        continue
     
             # Iterate through each row (student) in the DataFrame
             for i in range(len(df)):
@@ -484,21 +615,25 @@ def display_academic_year_view(all_data, all_keys):
     # Display the DataFrame
     st.dataframe(styled_df, height=table_height, column_config={k: st.column_config.Column(width="medium") for k in aggregated_df.columns}, use_container_width=True)
 
-# Add a selectbox to the sidebar:
-choice = st.sidebar.radio("View", ("Module view", "Student view", "Academic year view"))
 
+# Add a selectbox to the sidebar:
+choice = st.sidebar.radio("View", ("Upload data", "Module view", "Student view", "Academic year view"))
+
+if choice == "Upload data":
+    # Call the function to upload data
+    display_upload_data_view()
 if choice == "Module view":
     # Call the function to display the selected module
-    display_selected_module(all_data, all_keys)
+    display_selected_module(st.session_state["all_data"], st.session_state["all_keys"])
 elif choice == "Student view":
     # Call the function to display the selected student
-    display_selected_student(all_data)
+    display_selected_student(st.session_state["all_data"])
 elif choice == "Academic year view":
-    display_academic_year_view(all_data, all_keys)
+    display_academic_year_view(st.session_state["all_data"], st.session_state["all_keys"])
     # st.write("Student view is not implemented yet")
 # AgGrid(last_df, height=table_height)
 
 # Add a selectbox to the sidebar:
-add_selectbox = st.sidebar.selectbox(
-    "Academic year", default_years, index=len(default_years) - 1
-)
+# add_selectbox = st.sidebar.selectbox(
+#     "Academic year", default_years, index=len(default_years) - 1
+# )
