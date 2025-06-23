@@ -40,6 +40,9 @@ from streamlit_slickgrid import (
     StreamlitSlickGridSorters,
 )
 
+#This line is very important, it allows to save the selected values of widget with a key in session state
+st.session_state.update(st.session_state)
+
 st.set_page_config(layout="wide", page_title="ISCMarks", page_icon="res/logo-512.png")
 
 st.title("Marks crawler 🔎")
@@ -184,8 +187,11 @@ st.session_state.setdefault("all_keys", {})
 def display_upload_data_view():
     st.title("Upload Excel Files")
     sector_options = ["ETE", "ISC", "SYND", "TEVI"]
+    #if "sector" not in st.session_state:
+        # Initialize the session state for sector if not already set
+    #    st.session_state.sector = "ISC"
     # Determine the index for st.radio based on st.session_state["sector"]
-    sector_index = None
+    #sector_index = None
     # if "sector" in st.session_state and st.session_state["sector"] in sector_options:
         # sector_index = sector_options.index(st.session_state["sector"])
 
@@ -194,8 +200,10 @@ def display_upload_data_view():
         "Choose your sector:",
         sector_options,
         horizontal=True,
-        index=sector_index  # Set to the correct index or None
+        key="sector_radio", # This is what saves the state of the radio button
+        #index=sector_options.index(st.session_state.sector)  # Set to the correct index or None
     )
+
     st.markdown("Upload your `.xlsx` files to use them as the data source for the app.")
 
     # File uploader
@@ -367,7 +375,7 @@ def display_selected_module(all_data, all_keys):
 
     # Add the visual data frame in the middle of the screen
     table_height = (
-        last_df.shape[0] + 1
+        last_df.shape[0] + 2
     ) * 35 + 3  # Make that we display every student in the module
 
     # Highlight those who fail
@@ -411,9 +419,31 @@ def display_selected_module(all_data, all_keys):
     copy_df.insert(0, "Etudiant", etudiant_col)
     copy_df = copy_df.drop(columns=["Nom", "Prenom"])
    
-    styled_df = copy_df.style.apply(highlight_if_echec, axis=1).format(add_checkmarks)    
+    # Add average row at the end, ignoring all non-numeric values
+    def to_numeric_or_nan(val):
+        try:
+            return float(val)
+        except (ValueError, TypeError):
+            return pd.NA
+    numeric_df = copy_df.map(to_numeric_or_nan)
+    avg_row = numeric_df.mean(axis=0, numeric_only=True)
+    avg_row = avg_row.round(2)
+    avg_row.name = "Average"
+    # Set the 'Etudiant' field to 'Average' for the average row
+    avg_row = avg_row.to_dict()
+    avg_row[copy_df.columns[0]] = "Average"
+    copy_df_with_avg = pd.concat([copy_df, pd.DataFrame([avg_row], columns=copy_df.columns)], ignore_index=True)
+
+    # Add blue highlight to the average row
+    def highlight_average_row(row):
+        if row[copy_df.columns[0]] == "Average":
+            return ['background-color: #cce6ff'] * len(row)
+        else:
+            return [''] * len(row)
+
+    styled_df = copy_df_with_avg.style.apply(highlight_if_echec, axis=1).apply(highlight_average_row, axis=1).format(add_checkmarks)
     st.dataframe(styled_df, height=table_height, use_container_width=True)
-    
+
 
 def display_selected_student(all_data):
     """
@@ -608,10 +638,28 @@ def display_academic_year_view(all_data, all_keys):
 
     # Compute the height of the table based on the number of students
     table_height = (
-        aggregated_df.shape[0] + 1
+        aggregated_df.shape[0] + 2  # +2 to account for header and new average row
     ) * 35 + 3  # Make that we display every student in the module
 
-    styled_df = aggregated_df.style.applymap(highlight_below_4).format(precision=1)
+    # Add average row at the end
+    avg_row = aggregated_df.mean(axis=0, numeric_only=True)
+    avg_row = avg_row.round(2)
+    avg_row.name = "Average"
+    aggregated_df_with_avg = pd.concat([aggregated_df, avg_row.to_frame().T])
+    avg_row = avg_row.to_dict()
+    # Set the first column (student name) to 'Average' for the average row
+    # avg_row[aggregated_df.columns[0]] = "Average"
+    # aggregated_df_with_avg = pd.concat([aggregated_df, pd.DataFrame([avg_row], columns=aggregated_df.columns)], ignore_index=True)
+
+    # Add blue highlight to the average row
+    def highlight_average_row(row):
+        if row.name == "Average":
+            return ['background-color: #cce6ff'] * len(row)
+        else:
+            return [''] * len(row)
+
+    # Apply the highlighting functions and format the DataFrame
+    styled_df = aggregated_df_with_avg.style.map(highlight_below_4).apply(highlight_average_row, axis=1).format(precision=1)
 
     # Display the DataFrame
     st.dataframe(styled_df, height=table_height, column_config={k: st.column_config.Column(width="medium") for k in aggregated_df.columns}, use_container_width=True)
