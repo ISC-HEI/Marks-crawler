@@ -26,7 +26,7 @@ import os
 import streamlit as st
 import pandas as pd
 import re
-import tempfile
+#import tempfile
 
 from streamlit_slickgrid import (
     add_tree_info,
@@ -131,21 +131,21 @@ def load_and_mangle_data(file_path):
 # print(mod_200)
 
 
-def load_all_data(directory):
-    """Loads all data from Excel files in a directory into a dictionary of DataFrames.
+def load_all_data(iofiles):
+    """Loads all data from a list of iofiles into a dictionary of DataFrames.
 
     Args:
-        directory (str): The path to the directory containing the Excel files.
+        iofiles (list): List of file-like objects (e.g., from Streamlit's file uploader).
 
     Returns:
         dict: A dictionary where keys are filenames and values are pandas DataFrames.
                 Only includes .xlsx files and excludes temporary files (starting with '~').
     """
     all_data = {}
-    for filename in os.listdir(directory):
+    for file in iofiles:
+        filename = file.name
         if filename.endswith(".xlsx") and not filename.startswith("~"):
-            file_path = os.path.join(directory, filename)
-            df = load_and_mangle_data(file_path)
+            df = load_and_mangle_data(file)
             all_data[filename] = df
     return all_data
 
@@ -206,12 +206,13 @@ def display_upload_data_view():
     if uploaded_files:
         #print("Uploaded files:", uploaded_files)
         st.success(f"{len(uploaded_files)} file(s) uploaded successfully!")
-        # Save uploaded files to a temporary directory
-        temp_dir = tempfile.mkdtemp()
-        for uploaded_file in uploaded_files:
-            with open(os.path.join(temp_dir, uploaded_file.name), "wb") as f:
-                f.write(uploaded_file.getbuffer())
-        st.session_state["all_data"] = load_all_data(temp_dir)
+        # # Save uploaded files to a temporary directory
+        # temp_dir = tempfile.mkdtemp()
+        # for uploaded_file in uploaded_files:
+        #     with open(os.path.join(temp_dir, uploaded_file.name), "wb") as f:
+        #         f.write(uploaded_file.getbuffer())
+        # st.session_state["all_data"] = load_all_data(temp_dir)
+        st.session_state["all_data"] = load_all_data(uploaded_files)
         st.session_state["all_keys"] = get_keys(st.session_state["all_data"])
         st.info("Uploaded files will now be used as the data source.")
 
