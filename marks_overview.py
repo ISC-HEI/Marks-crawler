@@ -26,7 +26,7 @@ import os
 import streamlit as st
 import pandas as pd
 import re
-#import tempfile
+import math
 
 from streamlit_slickgrid import (
     add_tree_info,
@@ -38,6 +38,13 @@ from streamlit_slickgrid import (
     ExportServices,
     StreamlitSlickGridFormatters,
     StreamlitSlickGridSorters,
+)
+
+from pandas.api.types import (
+    is_categorical_dtype,
+    is_datetime64_any_dtype,
+    is_numeric_dtype,
+    is_object_dtype,
 )
 
 #This line is very important, it allows to save the selected values of widget with a key in session state
@@ -184,18 +191,97 @@ st.session_state.setdefault("all_keys", {})
 #     st.session_state["all_keys"] = all_keys
 #     print("added all keys to session state", st.session_state["all_keys"])
 
+def replace_nan_in_display(element):
+    """This is used to display None instead of nan value in multiselect widget
+    """
+    if isinstance(element, float) and math.isnan(element):
+        return "None"
+    return element
+
+def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Adds a UI on top of a dataframe to let viewers filter columns
+
+    Args:
+        df (pd.DataFrame): Original dataframe
+
+    Returns:
+        pd.DataFrame: Filtered dataframe
+    """
+    modify = st.checkbox("Add filters")
+
+    if not modify:
+        return df
+
+    df = df.copy()
+
+    modification_container = st.container()
+
+    with modification_container:
+        to_filter_columns = st.multiselect("Filter dataframe on", df.columns)
+        for column in to_filter_columns:
+            left, right = st.columns((1, 20))
+            # Get unique values in the column
+            unique_values = df[column].unique()
+            # Use multiselect for categorical columns
+            #if isinstance(df[column], pd.CategoricalDtype) or df[column].nunique() < 10:
+            if column in ["Remarques", "Module", "Temps partiel"] or (len(unique_values) == 1 and pd.isna(unique_values[0])): # Hard coded to avoid filtering issues
+
+                # Set default list
+                default_list = list(unique_values)
+                # This is a hack because Streamlit multiselect does not handle NaN values well if the column has only NaN values
+                if len(unique_values) == 1 and pd.isna(unique_values[0]):
+                    default_list = []
+
+                user_cat_input = right.multiselect(
+                    f"Values for {column}",
+                    options=unique_values,
+                    format_func=replace_nan_in_display,
+                    default=default_list,
+                )
+                df = df[df[column].isin(user_cat_input)]
+            # Use slider range for numeric columns
+            elif is_numeric_dtype(df[column]):
+
+                _min = float(df[column].min())
+                _max = float(df[column].max())
+                step = 0.1#(_max - _min) / 100
+                user_num_input = right.slider(
+                    f"Values for {column}",
+                    min_value=_min,
+                    max_value=_max,
+                    value=(_min, _max),
+                    step=step,
+                )
+                df = df[df[column].between(*user_num_input)]
+            
+            elif is_datetime64_any_dtype(df[column]):
+                user_date_input = right.date_input(
+                    f"Values for {column}",
+                    value=(
+                        df[column].min(),
+                        df[column].max(),
+                    ),
+                )
+                if len(user_date_input) == 2:
+                    user_date_input = tuple(map(pd.to_datetime, user_date_input))
+                    start_date, end_date = user_date_input
+                    df = df.loc[df[column].between(start_date, end_date)]
+            else:
+                user_text_input = right.text_input(
+                    f"Substring or regex in {column}",
+                )
+                if user_text_input:
+                    df = df[df[column].astype(str).str.contains(user_text_input)]
+
+    return df
+
+
 def display_upload_data_view():
     st.title("Upload Excel Files")
-    sector_options = ["ETE", "ISC", "SYND", "TEVI"]
-    #if "sector" not in st.session_state:
-        # Initialize the session state for sector if not already set
-    #    st.session_state.sector = "ISC"
-    # Determine the index for st.radio based on st.session_state["sector"]
-    #sector_index = None
-    # if "sector" in st.session_state and st.session_state["sector"] in sector_options:
-        # sector_index = sector_options.index(st.session_state["sector"])
 
-    #print("sector_index:", sector_index)
+    # Selector for the sector
+    sector_options = ["ETE", "ISC", "SYND", "TEVI"]
     st.session_state["sector"] = st.radio(
         "Choose your sector:",
         sector_options,
@@ -214,12 +300,7 @@ def display_upload_data_view():
     if uploaded_files:
         #print("Uploaded files:", uploaded_files)
         st.success(f"{len(uploaded_files)} file(s) uploaded successfully!")
-        # # Save uploaded files to a temporary directory
-        # temp_dir = tempfile.mkdtemp()
-        # for uploaded_file in uploaded_files:
-        #     with open(os.path.join(temp_dir, uploaded_file.name), "wb") as f:
-        #         f.write(uploaded_file.getbuffer())
-        # st.session_state["all_data"] = load_all_data(temp_dir)
+        # Process the uploaded files and store the data in session state
         st.session_state["all_data"] = load_all_data(uploaded_files)
         st.session_state["all_keys"] = get_keys(st.session_state["all_data"])
         st.info("Uploaded files will now be used as the data source.")
@@ -299,29 +380,17 @@ def display_selected_module(all_data, all_keys):
             selection_mode="multi",
             default=(pill_options),
             on_change=lambda: st.session_state.update(module_selected_idx=0))
-
+        
+        fail_success = st.pills(
+            "Show students who:",
+            ["Pass", "Fail"],
+            selection_mode="multi",
+            default=(["Pass", "Fail"]),
+        )
+        
         # Filter display names based on the selected level(s)
         filtered_display_names = filter_module_by_level(selected_levels, display_names, st.session_state['sector'])
-        # filtered_display_names = []
-        # for level in selected_levels:
-        #     if level == "1st year":
-        #         filtered_display_names.extend(
-        #             [name for name in display_names if name.startswith("1")]
-        #         )
-        #     elif level == "2nd year":
-        #         filtered_display_names.extend(
-        #             [name for name in display_names if name.startswith("2")]
-        #         )
-        #     elif level == "3rd year":
-        #         filtered_display_names.extend(
-        #             [name for name in display_names if name.startswith("3")]
-        #         )
-
-        # filtered_display_names.sort()
-
-        # # Remove duplicates while preserving order
-        # filtered_display_names = list(dict.fromkeys(filtered_display_names))
-
+        
     # Display the selectbox with the filtered names
     with col2:
         selected_display_name = st.selectbox("Select a module:", filtered_display_names, index=st.session_state['module_selected_idx'])
@@ -352,13 +421,6 @@ def display_selected_module(all_data, all_keys):
             pass
 
 
-    # Find the key corresponding to the selected display name
-    selected_file = next(
-        key
-        for key, value in all_keys.items()
-        if f"{value[0]} {value[1]}" == selected_display_name
-    )
-
     # Get the list of display names
     display_names = [f"{v[0]} {v[1]}" for k, v in all_keys.items()]
     display_names.sort()
@@ -372,11 +434,6 @@ def display_selected_module(all_data, all_keys):
 
     # Display the DataFrame based on the selected file
     last_df = all_data[selected_file]
-
-    # Add the visual data frame in the middle of the screen
-    table_height = (
-        last_df.shape[0] + 2
-    ) * 35 + 3  # Make that we display every student in the module
 
     # Highlight those who fail
     def highlight_if_echec(row):
@@ -415,34 +472,57 @@ def display_selected_module(all_data, all_keys):
     # Get the "Etudiant" column
     etudiant_col = copy_df.pop("Etudiant")
     
-    # Insert the "Etudiant" column at the beginning of the DataFrame
-    copy_df.insert(0, "Etudiant", etudiant_col)
     copy_df = copy_df.drop(columns=["Nom", "Prenom"])
    
-    # Add average row at the end, ignoring all non-numeric values
+    # Compute the average row, ignoring all non-numeric values
     def to_numeric_or_nan(val):
         try:
             return float(val)
         except (ValueError, TypeError):
-            return pd.NA
+            return float('nan')
     numeric_df = copy_df.map(to_numeric_or_nan)
+    numeric_df = numeric_df.drop(columns=["Module", "Temps partiel", "Remarques"], errors='ignore')
+
     avg_row = numeric_df.mean(axis=0, numeric_only=True)
     avg_row = avg_row.round(2)
     avg_row.name = "Average"
-    # Set the 'Etudiant' field to 'Average' for the average row
-    avg_row = avg_row.to_dict()
-    avg_row[copy_df.columns[0]] = "Average"
-    copy_df_with_avg = pd.concat([copy_df, pd.DataFrame([avg_row], columns=copy_df.columns)], ignore_index=True)
-
+    
+    # Create a DataFrame for the average row only
+    average_df = pd.DataFrame([avg_row])
+    
     # Add blue highlight to the average row
     def highlight_average_row(row):
-        if row[copy_df.columns[0]] == "Average":
+        if row.name == "Average":
             return ['background-color: #cce6ff'] * len(row)
         else:
             return [''] * len(row)
 
-    styled_df = copy_df_with_avg.style.apply(highlight_if_echec, axis=1).apply(highlight_average_row, axis=1).format(add_checkmarks)
-    st.dataframe(styled_df, height=table_height, use_container_width=True)
+    # Insert the "Etudiant" column at the beginning of the DataFrame
+    copy_df.insert(0, "Etudiant", etudiant_col)
+    # Filter the DataFrame based on the selected fail/success options
+    if "Pass" in fail_success and "Fail" in fail_success:
+        pass  # Show all rows
+    elif "Pass" in fail_success:
+        copy_df = copy_df[copy_df["Module"] != "Echec"]
+    elif "Fail" in fail_success:
+        copy_df = copy_df[copy_df["Module"] == "Echec"]
+    else:
+        copy_df = copy_df.iloc[0:0]  # Show empty if neither selected
+
+    # Compute the height of the table based on the number of rows
+    def compute_height(df):
+        return (df.shape[0] + 1) * 35 + 3  # Make that we display every student in the module
+
+    # Add the filters widgets on top of the dataframe
+    filtered_df = filter_dataframe(copy_df)
+
+    # Style the DataFrame
+    styled_df = filtered_df.style.apply(highlight_if_echec, axis=1).format(add_checkmarks)
+    styled_avg_df = average_df.style.apply(highlight_average_row, axis=1).format(add_checkmarks)
+
+    # Display the DataFrame with the applied styles
+    st.dataframe(styled_df, height=compute_height(filtered_df), use_container_width=True)
+    st.dataframe(styled_avg_df, height=40, use_container_width=True)
 
 
 def display_selected_student(all_data):
@@ -638,18 +718,16 @@ def display_academic_year_view(all_data, all_keys):
 
     # Compute the height of the table based on the number of students
     table_height = (
-        aggregated_df.shape[0] + 2  # +2 to account for header and new average row
+        aggregated_df.shape[0] + 1  # +2 to account for header and new average row
     ) * 35 + 3  # Make that we display every student in the module
 
-    # Add average row at the end
+    # Compute the average row and create new dataframe with it
     avg_row = aggregated_df.mean(axis=0, numeric_only=True)
     avg_row = avg_row.round(2)
     avg_row.name = "Average"
-    aggregated_df_with_avg = pd.concat([aggregated_df, avg_row.to_frame().T])
+    average_df = pd.DataFrame([avg_row])
+
     avg_row = avg_row.to_dict()
-    # Set the first column (student name) to 'Average' for the average row
-    # avg_row[aggregated_df.columns[0]] = "Average"
-    # aggregated_df_with_avg = pd.concat([aggregated_df, pd.DataFrame([avg_row], columns=aggregated_df.columns)], ignore_index=True)
 
     # Add blue highlight to the average row
     def highlight_average_row(row):
@@ -659,10 +737,12 @@ def display_academic_year_view(all_data, all_keys):
             return [''] * len(row)
 
     # Apply the highlighting functions and format the DataFrame
-    styled_df = aggregated_df_with_avg.style.map(highlight_below_4).apply(highlight_average_row, axis=1).format(precision=1)
+    styled_df = aggregated_df.style.map(highlight_below_4).format(precision=1)
+    avg_styled_df = average_df.style.map(highlight_below_4).apply(highlight_average_row, axis=1).format(precision=1)
 
     # Display the DataFrame
     st.dataframe(styled_df, height=table_height, column_config={k: st.column_config.Column(width="medium") for k in aggregated_df.columns}, use_container_width=True)
+    st.dataframe(avg_styled_df, height=2, column_config={k: st.column_config.Column(width="medium") for k in aggregated_df.columns}, use_container_width=True)
 
 
 # Add a selectbox to the sidebar:
