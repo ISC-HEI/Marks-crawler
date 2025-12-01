@@ -132,6 +132,9 @@ def load_and_mangle_data(file_path):
     last_sheet_name = list(xl_page.keys())[-1]
     last_df = xl_page[last_sheet_name]
 
+    # Replace all "-" with NaN
+    last_df.replace("-", pd.NA, inplace=True)
+    
     # Remove the last two columns
     last_df = last_df.iloc[:, :]
     return last_df
@@ -225,7 +228,7 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
             unique_values = df[column].unique()
             # Use multiselect for categorical columns
             #if isinstance(df[column], pd.CategoricalDtype) or df[column].nunique() < 10:
-            if column in ["Remarques", "Module", "Temps partiel"] or (len(unique_values) == 1 and pd.isna(unique_values[0])): # Hard coded to avoid filtering issues
+            if column in ["Remarques", "Module", "Temps partiel", "Orientation / Option"] or (len(unique_values) == 1 and pd.isna(unique_values[0])): # Hard coded to avoid filtering issues
 
                 # Set default list
                 default_list = list(unique_values)
@@ -481,7 +484,7 @@ def display_selected_module(all_data, all_keys):
         except (ValueError, TypeError):
             return float('nan')
     numeric_df = copy_df.map(to_numeric_or_nan)
-    numeric_df = numeric_df.drop(columns=["Module", "Temps partiel", "Remarques"], errors='ignore')
+    numeric_df = numeric_df.drop(columns=["Module", "Orientation / Option", "Temps partiel", "Remarques"], errors='ignore')
 
     avg_row = numeric_df.mean(axis=0, numeric_only=True)
     avg_row = avg_row.round(2)
@@ -535,9 +538,9 @@ def display_selected_student(all_data):
     # Extract all student names from all DataFrames
     all_student_names = []
     for df in all_data.values():
-        # Assuming first two columns are 'First Name' and 'Last Name'
+        # We expect to have a column "Nom" and "Prenom"
         for i in range(len(df)):
-            all_student_names.append(f"{df.iloc[i, 0]} {df.iloc[i, 1]}")
+            all_student_names.append(f"{df.iloc[i]['Nom']} {df.iloc[i]['Prenom']}")
 
     # Remove duplicate names
     unique_student_names = sorted(list(set(all_student_names)))
@@ -551,9 +554,9 @@ def display_selected_student(all_data):
     # Iterate through all DataFrames to find the selected student
     for filename, df in all_data.items():
         for i in range(len(df)):
-            if f"{df.iloc[i, 0]} {df.iloc[i, 1]}" == selected_student_name:
+            if f"{df.iloc[i]['Nom']} {df.iloc[i]['Prenom']}" == selected_student_name:
                 # Extract the student's data from the current DataFrame
-                module_data = df.iloc[i, 2:]  # Exclude first two columns (name)
+                module_data = df.iloc[i, 4:]  # Exclude first four columns (name + Orientation + Partial time)
                 student_data[filename] = module_data.to_dict()
 
     # Prepare data for DataFrame
@@ -596,7 +599,7 @@ def display_selected_student(all_data):
         
         course_data = []
         for course_name, details in module_data.items():
-            if course_name.startswith("Note") or course_name.startswith("Module") or course_name.startswith("Temps partiel") or course_name.startswith("Remarques"):
+            if course_name.startswith("Note") or course_name.startswith("Module") or course_name.startswith("Temps partiel") or course_name.startswith("Orientation / Option") or course_name.startswith("Remarques"):
                 continue
             course_data.append({"Unité d'enseignement": course_name, "Note": details})
 
@@ -669,8 +672,8 @@ def display_academic_year_view(all_data, all_keys):
             # Iterate through each row (student) in the DataFrame
             for i in range(len(df)):
                 # Extract student name
-                first_name = df.iloc[i, 0]
-                last_name = df.iloc[i, 1]
+                first_name = df.iloc[i]["Nom"]
+                last_name = df.iloc[i]["Prenom"]
                 student_name = f"{first_name} {last_name}"
     
                 # Extract "Note du module" and rename it with the filename
