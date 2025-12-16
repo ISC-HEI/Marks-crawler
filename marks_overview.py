@@ -1,17 +1,17 @@
 # MIT License
-# 
+#
 # Copyright (c) 2024 Pierre-André Mudry
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -47,6 +47,15 @@ from pandas.api.types import (
     is_object_dtype,
 )
 
+import subprocess
+
+# simulate git describe --tags --always --first-parent --dirty=.dirty
+def git_describe():
+    try:
+        return subprocess.check_output(["git","describe","--tags","--always","--first-parent","--dirty=.dirty"]).decode("utf-8")
+    except:
+        return "unknown version"
+
 #This line is very important, it allows to save the selected values of widget with a key in session state
 st.session_state.update(st.session_state)
 
@@ -79,7 +88,7 @@ default_years = ["2022-2023", "2023-2024", "2024-2025"]
 def load_module_list():
     """
     Loads the module list for each sector from a csv file and return it.
-    
+
     Returns:
         dict: A dictionary containing the module list for each sector for each year.
     """
@@ -88,7 +97,7 @@ def load_module_list():
     for sector in ["ETE", "SYND", "TEVI"]:
         file_path = os.path.join(module_list_dir, sector+"StudyPlan.csv")
         if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Module list file not found: {file_path}") 
+            raise FileNotFoundError(f"Module list file not found: {file_path}")
 
         # Load csv into a pandas DataFrame
         df = pd.read_csv(file_path, delimiter=";")
@@ -134,7 +143,7 @@ def load_and_mangle_data(file_path):
 
     # Replace all "-" with NaN
     last_df.replace("-", pd.NA, inplace=True)
-    
+
     # Remove the last two columns
     last_df = last_df.iloc[:, :]
     return last_df
@@ -257,7 +266,7 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
                     step=step,
                 )
                 df = df[df[column].between(*user_num_input)]
-            
+
             elif is_datetime64_any_dtype(df[column]):
                 user_date_input = right.date_input(
                     f"Values for {column}",
@@ -324,7 +333,7 @@ def filter_module_by_level(selected_levels, display_names, sector):
     for level in selected_levels:
         match sector :
             # Filter display names based on the selected level(s)
-            
+
             case "ISC":
                 # For ISC, we filter by the first character of the module code
                 if level == "1st year":
@@ -344,8 +353,8 @@ def filter_module_by_level(selected_levels, display_names, sector):
                 filtered_display_names.extend(
                     [name for name in display_names if name.split(" ")[0] in st.session_state["modules_list"][sector][level]]
                 )
-            
-                
+
+
     filtered_display_names.sort()
 
     # Remove duplicates while preserving order
@@ -383,21 +392,21 @@ def display_selected_module(all_data, all_keys):
             selection_mode="multi",
             default=(pill_options),
             on_change=lambda: st.session_state.update(module_selected_idx=0))
-        
+
         fail_success = st.pills(
             "Show students who:",
             ["Pass", "Fail"],
             selection_mode="multi",
             default=(["Pass", "Fail"]),
         )
-        
+
         # Filter display names based on the selected level(s)
         filtered_display_names = filter_module_by_level(selected_levels, display_names, st.session_state['sector'])
-        
+
     # Display the selectbox with the filtered names
     with col2:
         selected_display_name = st.selectbox("Select a module:", filtered_display_names, index=st.session_state['module_selected_idx'])
-        
+
         if selected_display_name == None:
             return
 
@@ -407,27 +416,27 @@ def display_selected_module(all_data, all_keys):
                 current_index = st.session_state['module_selected_idx']+1
                 if current_index >= len(filtered_display_names):
                     current_index = 0
-            
+
             if direction == 'D':
                 current_index = st.session_state['module_selected_idx']-1
                 if current_index < 0:
                     current_index = len(filtered_display_names) - 1
-            
+
             st.session_state['module_selected_idx'] = current_index
-        
+
         left, right = st.columns(2)
         # Add a button to select the previous module
-        if left.button("Previous", on_click=onClick, args='D'): 
+        if left.button("Previous", on_click=onClick, args='D'):
             pass
         # Add a button to select the next module
-        if right.button("Next", on_click=onClick, args='U'): 
+        if right.button("Next", on_click=onClick, args='U'):
             pass
 
 
     # Get the list of display names
     display_names = [f"{v[0]} {v[1]}" for k, v in all_keys.items()]
     display_names.sort()
-            
+
     # Find the key corresponding to the selected display name
     selected_file = next(
         key
@@ -456,7 +465,7 @@ def display_selected_module(all_data, all_keys):
                 styles.append("")
 
         return styles
-    
+
     def add_checkmarks(val):
         if isinstance(val, (int, float)):
             return f"{val:.2f}"
@@ -464,19 +473,19 @@ def display_selected_module(all_data, all_keys):
             case "Réussi":
                 return "✅"
             case "Echec":
-                return "❌"        
-                    
+                return "❌"
+
         return val
-   
+
     copy_df = last_df.copy()
     # Merge "Nom" and "Prenom" columns into a single "Etudiant" column
     copy_df["Etudiant"] = copy_df["Nom"] + " " + copy_df["Prenom"]
-    
+
     # Get the "Etudiant" column
     etudiant_col = copy_df.pop("Etudiant")
-    
+
     copy_df = copy_df.drop(columns=["Nom", "Prenom"])
-   
+
     # Compute the average row, ignoring all non-numeric values
     def to_numeric_or_nan(val):
         try:
@@ -489,10 +498,10 @@ def display_selected_module(all_data, all_keys):
     avg_row = numeric_df.mean(axis=0, numeric_only=True)
     avg_row = avg_row.round(2)
     avg_row.name = "Average"
-    
+
     # Create a DataFrame for the average row only
     average_df = pd.DataFrame([avg_row])
-    
+
     # Add blue highlight to the average row
     def highlight_average_row(row):
         if row.name == "Average":
@@ -589,14 +598,14 @@ def display_selected_student(all_data):
     if "Module" in summary_df.columns:
         summary_df.sort_values(by="Module", inplace=True)
     st.dataframe(summary_df)
-    
-    
+
+
     for filename, module_data in student_data.items():
         filename = filename.split("2024-2025")[0]
 
         # st.write(f"{filename} - Note du module {mark}, module {success}")
         st.write(f"{filename}")
-        
+
         course_data = []
         for course_name, details in module_data.items():
             if course_name.startswith("Note") or course_name.startswith("Module") or course_name.startswith("Temps partiel") or course_name.startswith("Orientation / Option") or course_name.startswith("Remarques"):
@@ -652,7 +661,7 @@ def display_academic_year_view(all_data, all_keys):
         #print("filtered_module_codes:", filtered_module_codes)
         # Create a dictionary to store aggregated student data
         aggregated_data = {}
-    
+
         # Iterate through all DataFrames
         for filename, df in all_data.items():
             # Extract module code from filename
@@ -668,31 +677,31 @@ def display_academic_year_view(all_data, all_keys):
                     # For ETE, SYND and TEVI we check the module list
                     if module_code not in st.session_state["modules_list"][st.session_state["sector"]][selected_level]:
                         continue
-    
+
             # Iterate through each row (student) in the DataFrame
             for i in range(len(df)):
                 # Extract student name
                 first_name = df.iloc[i]["Nom"]
                 last_name = df.iloc[i]["Prenom"]
                 student_name = f"{first_name} {last_name}"
-    
+
                 # Extract "Note du module" and rename it with the filename
                 note_du_module = df.get("Note du module", None)  # Use get to handle missing column
                 if note_du_module is None:
                     note_du_module = df.iloc[i]["Note finale"]
                 else:
                     note_du_module = df.iloc[i]["Note du module"]
-    
+
                 # If student is not in the aggregated data, initialize their entry
                 if student_name not in aggregated_data:
                     aggregated_data[student_name] = {}
-    
+
                 # Add the module note to the student's data, using the filename as the key
                 aggregated_data[student_name][filename] = note_du_module
-    
+
         # Remove students with no marks
         aggregated_data = {k: v for k, v in aggregated_data.items() if v}
-    
+
         # Convert the aggregated data to a DataFrame
         aggregated_df = pd.DataFrame.from_dict(aggregated_data, orient='index')
 
@@ -702,7 +711,7 @@ def display_academic_year_view(all_data, all_keys):
             new_col = re.split(r"202\d", col)[0]
             new_column_names[col] = new_col
         aggregated_df = aggregated_df.rename(columns=new_column_names)
-    
+
     # Sort columns lexicographically
     aggregated_df = aggregated_df.reindex(sorted(aggregated_df.columns), axis=1)
 
@@ -762,6 +771,9 @@ elif choice == "Student view":
     display_selected_student(st.session_state["all_data"])
 elif choice == "Academic year view":
     display_academic_year_view(st.session_state["all_data"], st.session_state["all_keys"])
+
+st.sidebar.markdown("version : " + git_describe())
+
     # st.write("Student view is not implemented yet")
 # AgGrid(last_df, height=table_height)
 
