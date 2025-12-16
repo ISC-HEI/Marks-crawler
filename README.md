@@ -1,4 +1,4 @@
-# Marks crawler from XLSX files 
+# Marks crawler from XLSX files
 
 ![Static Badge](https://img.shields.io/badge/WIP-0.1-blue?style=flat&color=blue)
 
@@ -61,3 +61,43 @@ uv add streamlit
 uv run streamlit
 ```
 
+## Deployment
+### `docker`
+1. Clone and cd into the directory
+```
+git clone https://github.com/ISC-HEI/Marks-crawler.git && cd Marks-crawler
+```
+1. Build the `docker` image.
+```
+./docker_build.sh
+```
+1. Run it
+```
+docker run -d --name marks_crawler_dev --restart=unless-stopped -p 8501:8501 isc-hei/marks_crawler
+```
+1. Test it on http://localhost:8501
+### `apache` proxy
+Here is a sample file for using `apache` as a proxy for this application.
+```properties
+<IfModule mod_ssl.c>
+	<VirtualHost _default_:443>
+		ServerName marks.example.com
+		ServerAdmin webmaster@localhost
+
+		Include /etc/XXX/options-ssl-apache.conf
+
+		DocumentRoot /var/www/html
+    <Location />
+            Require all granted
+    </Location>
+    ProxyPreserveHost on
+    ProxyRequests   on
+		RewriteEngine On
+		RewriteCond %{HTTP:Upgrade} =websocket
+		RewriteRule /(.*) ws://localhost:8501/$1 [P]
+		RewriteCond %{HTTP:Upgrade} !=websocket
+		RewriteRule /(.*) http://localhost:8501/$1 [P]
+		ProxyPassReverse / http://localhost:8501
+	</VirtualHost>
+</IfModule>
+```
