@@ -1,4 +1,4 @@
-# Marks crawler from XLSX files 
+# Marks crawler from XLSX files
 
 ![Static Badge](https://img.shields.io/badge/WIP-0.1-blue?style=flat&color=blue)
 
@@ -61,3 +61,66 @@ uv add streamlit
 uv run streamlit
 ```
 
+## Deployment
+### `docker`
+1. Clone and cd into the directory
+```
+git clone https://github.com/ISC-HEI/Marks-crawler.git && cd Marks-crawler
+```
+1. Build the `docker` image.
+```
+./docker_build.sh
+```
+1. Run it
+```
+docker run -d --name marks_crawler_dev --restart=unless-stopped -p 8501:8501 isc-hei/marks_crawler
+```
+1. Test it on http://localhost:8501
+### `apache` proxy
+Here is a sample file for using `apache` as a proxy for this application.
+```properties
+<IfModule mod_ssl.c>
+	<VirtualHost _default_:443>
+		ServerName marks.example.com
+		ServerAdmin webmaster@localhost
+
+		Include /etc/XXX/options-ssl-apache.conf
+
+		DocumentRoot /var/www/html
+    <Location />
+            Require all granted
+    </Location>
+    ProxyPreserveHost on
+    ProxyRequests   on
+		RewriteEngine On
+		RewriteCond %{HTTP:Upgrade} =websocket
+		RewriteRule /(.*) ws://localhost:8501/$1 [P]
+		RewriteCond %{HTTP:Upgrade} !=websocket
+		RewriteRule /(.*) http://localhost:8501/$1 [P]
+		ProxyPassReverse / http://localhost:8501
+	</VirtualHost>
+</IfModule>
+```
+
+### `nginx` proxy
+Here is a sample file for using `nginx` as a proxy for this application.
+
+```properties
+server {
+	server_name marks.example.com;
+
+	include snippets/XXX.conf;
+	listen 443 ssl;
+	listen [::]:443 ssl;
+
+	location / {
+		proxy_pass http://localhost:8501/;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header Host $http_host;
+		proxy_redirect off;
+		proxy_http_version 1.1;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection "upgrade";
+	}
+}
+```
