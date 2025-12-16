@@ -101,3 +101,26 @@ Here is a sample file for using `apache` as a proxy for this application.
 	</VirtualHost>
 </IfModule>
 ```
+
+### `nginx` proxy
+Here is a sample file for using `nginx` as a proxy for this application.
+
+```properties
+server {
+	server_name marks.example.com;
+
+	include snippets/XXX.conf;
+	listen 443 ssl;
+	listen [::]:443 ssl;
+
+	location / {
+		proxy_pass http://localhost:8501/;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header Host $http_host;
+		proxy_redirect off;
+		proxy_http_version 1.1;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection "upgrade";
+	}
+}
+```
