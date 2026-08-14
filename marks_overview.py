@@ -307,6 +307,30 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def check_study_plan_mismatch(all_keys, sector):
+    """
+    Checks whether the modules found in the uploaded files exist in
+    the selected sector's study plan.
+
+    Returns:
+        list: Module codes found in uploaded files but absent from
+              the study plan.
+    """
+    if sector not in st.session_state.get("modules_list", {}):
+        return []
+
+    # Get all module codes from the study plan
+    plan_codes = set()
+    for level_codes in st.session_state["modules_list"][sector].values():
+        plan_codes.update(level_codes)
+
+    # Get module codes from uploaded files
+    uploaded_codes = {v[0] for v in all_keys.values()}
+
+    # Only report uploaded modules that are NOT in the study plan
+    return sorted(uploaded_codes - plan_codes)
+
+
 def display_upload_data_view():
     st.title("Upload Excel Files")
 
@@ -333,6 +357,22 @@ def display_upload_data_view():
         # Process the uploaded files and store the data in session state
         st.session_state["all_data"] = load_all_data(uploaded_files)
         st.session_state["all_keys"] = get_keys(st.session_state["all_data"])
+
+        # Check for a mismatch between the uploaded files and the sector's study plan.
+        missing_from_plan = check_study_plan_mismatch(
+            st.session_state["all_keys"],
+            st.session_state["sector"]
+        )
+
+        if missing_from_plan:
+            st.warning(
+                f"These module code(s) were found in the uploaded files but are missing "
+                f"from the **{st.session_state['sector']}** study plan: "
+                f"{', '.join(missing_from_plan)}. They won't show up in the year-level "
+                f"filters until the study plan CSV is updated.",
+                icon="⚠️"
+            )
+
         st.info("Uploaded files will now be used as the data source.")
 
 def filter_module_by_level(selected_levels, display_names, sector):
