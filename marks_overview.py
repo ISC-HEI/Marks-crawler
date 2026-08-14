@@ -684,6 +684,8 @@ def display_academic_year_view(all_data, all_keys):
 
         # Iterate through all DataFrames
         for filename, df in all_data.items():
+            if filename not in all_keys:
+                continue
             # Extract module code from filename
             module_code = all_keys[filename][0]
             #print("module_code:", module_code)
